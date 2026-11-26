@@ -6,55 +6,60 @@
 <title>Marco digital</title>
 <style>
 :root{
-  --ink:#12161d; --paper:#ecebe6; --brass:#b8a06a; --veil:rgba(18,22,29,.78); --line:rgba(236,235,230,.22);
-  --d:6s; color-scheme:dark; box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  --ink:#12161d; --paper:#ecebe6; --brass:#b8a06a; --pill:rgba(18,22,29,.74); --line:rgba(236,235,230,.28);
+  --d:6s; --bar:52px; color-scheme:dark; box-sizing:border-box;
 }
 *,*::before,*::after{box-sizing:inherit}
-html,body{height:100%;margin:0;background:var(--ink);color:var(--paper);
+html,body{height:100%;margin:0;background:transparent;color:var(--paper);
   font-family:system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
 body{position:relative}
-#stage{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);overflow:hidden;isolation:isolate;
-  width:min(80vw,64vh);aspect-ratio:1;border-radius:6vmin;
-  box-shadow:0 0 0 1px var(--line),0 24px 70px rgba(0,0,0,.5);transition:border-radius .5s ease}
-body[data-shape=vertical] #stage{aspect-ratio:3/4;width:min(64vw,48vh)}
-body[data-shape=horizontal] #stage{aspect-ratio:3/2;width:min(88vw,96vh)}
+
+/* Área del marco: todo el espacio menos la franja de controles */
+#area{position:absolute;left:0;right:0;top:0;bottom:var(--bar);padding:10px;
+  display:flex;align-items:center;justify-content:center;container-type:size}
+body:has(#empty:not(.hide)) #area{visibility:hidden}
+#stage{position:relative;flex:none;overflow:hidden;isolation:isolate;
+  width:min(100cqw,100cqh);aspect-ratio:1;border-radius:min(8cqw,8cqh);
+  box-shadow:0 0 0 1px rgba(128,128,128,.25),0 12px 40px rgba(0,0,0,.28);transition:border-radius .5s ease}
+body[data-shape=vertical] #stage{aspect-ratio:3/4;width:min(100cqw,75cqh)}
+body[data-shape=horizontal] #stage{aspect-ratio:3/2;width:min(100cqw,150cqh)}
 body[data-shape=circle] #stage{border-radius:50%}
+
 .slide{position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease}
 .slide.on{opacity:1}
-.slide .bg{position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;filter:blur(38px) brightness(.55) saturate(1.1)}
-.slide .fg{position:absolute;inset:3vmin;width:calc(100% - 6vmin);height:calc(100% - 6vmin);object-fit:contain;
-  box-shadow:0 0 0 1px var(--line)}
+.slide .fg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .slide.on .fg.kb{animation:drift calc(var(--d) + 1.2s) ease-out forwards}
 @keyframes drift{from{transform:scale(1)}to{transform:scale(1.08)}}
-.slide .bg{display:none}
-.slide .fg{inset:0;width:100%;height:100%;object-fit:cover;box-shadow:none}
-#empty{background:var(--ink)}
 @media (prefers-reduced-motion:reduce){.slide.on .fg.kb{animation:none}.slide{transition-duration:.01s}}
 
-#empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center}
+#empty{position:absolute;left:0;right:0;top:0;bottom:var(--bar);display:flex;align-items:center;justify-content:center;padding:16px;text-align:center}
 #empty.hide{display:none}
-#drop{width:min(520px,100%);padding:56px 28px;border:1.5px dashed var(--brass);border-radius:6px;transition:background .2s}
-#drop.over{background:rgba(184,160,106,.12)}
-#drop h1{margin:0 0 10px;font-size:clamp(26px,5vw,38px);font-weight:600;letter-spacing:-.01em}
-#drop p{margin:0 0 26px;opacity:.75;line-height:1.5}
-button,select,label.btn{font:inherit;color:var(--paper);background:transparent;border:1px solid var(--line);border-radius:999px;
-  padding:9px 16px;cursor:pointer;min-height:40px;display:inline-flex;align-items:center;justify-content:center}
+#drop{width:min(520px,100%);padding:32px 20px;border:1.5px dashed var(--brass);border-radius:12px;
+  background:var(--pill);backdrop-filter:blur(6px);transition:background .2s}
+#drop.over{background:rgba(60,52,30,.85)}
+#drop h1{margin:0 0 8px;font-size:clamp(20px,4.5vw,32px);font-weight:600;letter-spacing:-.01em}
+#drop p{margin:0 0 20px;opacity:.8;line-height:1.5;font-size:14px}
+
+button,select,label.btn{font:inherit;font-size:13px;color:var(--paper);background:var(--pill);border:1px solid var(--line);
+  border-radius:999px;padding:0 12px;height:32px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  flex:none;white-space:nowrap;position:relative;backdrop-filter:blur(6px)}
 button:hover,select:hover,label.btn:hover{border-color:var(--brass)}
 button:focus-visible,select:focus-visible,label.btn:focus-within{outline:2px solid var(--brass);outline-offset:2px}
-.primary{background:var(--brass);color:var(--ink);border-color:var(--brass);font-weight:600}
-select{appearance:none;padding-right:16px}
-select option{background:var(--ink)}
+button[aria-pressed=false]{opacity:.6}
+.primary{background:var(--brass);color:var(--ink);border-color:var(--brass);font-weight:600;height:40px;padding:0 22px}
+select{appearance:none}
+select option{background:var(--ink);color:var(--paper)}
 input[type=file]{position:absolute;opacity:0;width:1px;height:1px}
 
-#bar{position:absolute;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
-  display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;max-width:calc(100% - 24px);
-  padding:10px;background:var(--veil);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:22px;
-  transition:opacity .4s,transform .4s}
-body.idle #bar{opacity:0;pointer-events:none;transform:translate(-50%,10px)}
+/* Franja de controles: ocupa su propio espacio, nunca tapa la foto */
+#bar{position:absolute;left:0;right:0;bottom:0;height:var(--bar);display:flex;align-items:center;
+  justify-content:safe center;gap:6px;padding:0 10px 4px;overflow-x:auto;scrollbar-width:none;transition:opacity .4s}
+#bar::-webkit-scrollbar{display:none}
+body.idle #bar{opacity:0;pointer-events:none}
 body.idle{cursor:none}
-#count{min-width:64px;text-align:center;font-variant-numeric:tabular-nums;opacity:.85}
-#progress{position:absolute;left:0;right:0;bottom:0;height:3px;background:transparent}
+#count{flex:none;min-width:48px;text-align:center;font-size:13px;font-variant-numeric:tabular-nums;
+  padding:0 10px;height:32px;line-height:32px;border-radius:999px;background:var(--pill)}
+#progress{position:absolute;left:0;right:0;bottom:0;height:2px;background:transparent}
 #progress i{display:block;height:100%;width:0;background:var(--brass)}
 #progress i.run{animation:fill var(--d) linear forwards}
 #progress.paused i{animation-play-state:paused}
@@ -62,9 +67,11 @@ body.idle{cursor:none}
 </style>
 </head>
 <body>
-<div id="stage">
-  <div class="slide" id="s0"><img class="bg" alt=""><img class="fg" alt=""></div>
-  <div class="slide" id="s1"><img class="bg" alt=""><img class="fg" alt=""></div>
+<div id="area">
+  <div id="stage">
+    <div class="slide" id="s0"><img class="fg" alt=""></div>
+    <div class="slide" id="s1"><img class="fg" alt=""></div>
+  </div>
 </div>
 
 <section id="empty">
@@ -88,11 +95,11 @@ body.idle{cursor:none}
     <option value="square" selected>Cuadrado</option><option value="vertical">Vertical</option>
     <option value="horizontal">Horizontal</option><option value="circle">Redondo</option>
   </select>
-  <button id="kb" aria-pressed="true">Zoom suave</button>
-  <label class="btn">Añadir fotos<input type="file" id="pick1" accept="image/*" multiple></label>
-  <button id="del">Quitar esta</button>
-  <button id="save">Guardar con fotos</button>
-  <button id="fs">Pantalla completa</button>
+  <button id="kb" aria-pressed="true" title="Zoom suave">Zoom</button>
+  <label class="btn" title="Añadir fotos">Añadir<input type="file" id="pick1" accept="image/*" multiple></label>
+  <button id="del" title="Quitar la foto actual">Quitar</button>
+  <button id="save" title="Guardar con fotos: descarga un archivo nuevo con tus fotos incluidas">Guardar</button>
+  <button id="fs" aria-label="Pantalla completa" title="Pantalla completa">⤢</button>
 </div>
 <div id="progress" aria-hidden="true"><i></i></div>
 <script type="application/json" id="seed">[]</script>
