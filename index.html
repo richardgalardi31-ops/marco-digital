@@ -7,8 +7,12 @@
 <style>
 :root{
   --ink:#12161d; --paper:#ecebe6; --brass:#b8a06a; --pill:rgba(18,22,29,.74); --line:rgba(236,235,230,.28);
-  --d:6s; --bar:52px; color-scheme:dark; box-sizing:border-box;
+  --d:6s; --bar:52px; color-scheme:light dark; box-sizing:border-box;
 }
+html[data-theme=dark]{color-scheme:dark}
+html[data-theme=dark],html[data-theme=dark] body{background:#12161d}
+html[data-theme=light]{color-scheme:light;--paper:#1c1f26;--pill:rgba(255,255,255,.85);--line:rgba(18,22,29,.2)}
+html[data-theme=light],html[data-theme=light] body{background:#f4f3ef}
 *,*::before,*::after{box-sizing:inherit}
 html,body{height:100%;margin:0;background:transparent;color:var(--paper);
   font-family:system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
@@ -48,7 +52,7 @@ button:focus-visible,select:focus-visible,label.btn:focus-within{outline:2px sol
 button[aria-pressed=false]{opacity:.6}
 .primary{background:var(--brass);color:var(--ink);border-color:var(--brass);font-weight:600;height:40px;padding:0 22px}
 select{appearance:none}
-select option{background:var(--ink);color:var(--paper)}
+select option{background:Canvas;color:CanvasText}
 input[type=file]{position:absolute;opacity:0;width:1px;height:1px}
 
 /* Franja de controles: ocupa su propio espacio, nunca tapa la foto */
@@ -94,6 +98,9 @@ body.idle{cursor:none}
   <select id="shape" aria-label="Forma del marco">
     <option value="square" selected>Cuadrado</option><option value="vertical">Vertical</option>
     <option value="horizontal">Horizontal</option><option value="circle">Redondo</option>
+  </select>
+  <select id="theme" aria-label="Fondo">
+    <option value="transparent" selected>Transparente</option><option value="dark">Oscuro</option><option value="light">Claro</option>
   </select>
   <button id="kb" aria-pressed="true" title="Zoom suave">Zoom</button>
   <label class="btn" title="Añadir fotos">Añadir<input type="file" id="pick1" accept="image/*" multiple></label>
@@ -169,9 +176,17 @@ body.idle{cursor:none}
     });
   }
   function persist(){idb('readwrite',function(s){s.put(photos,'photos')}).catch(function(){})}
+  function applyTheme(v){root.dataset.theme=v}
+  function applyOpts(o){
+    if(o.shape){$('#shape').value=o.shape; document.body.dataset.shape=o.shape}
+    if(o.speed){$('#speed').value=o.speed; setVars()}
+    if(typeof o.kb==='boolean'){kbOn=o.kb; $('#kb').setAttribute('aria-pressed',kbOn)}
+    var t=o.theme||'transparent'; $('#theme').value=t; applyTheme(t);
+  }
+  $('#theme').onchange=function(){applyTheme(this.value)};
   function exportFile(){
     if(!photos.length) return;
-    var html=SRC.replace(/(<script type="application\/json" id="seed">)[\s\S]*?(<\/script>)/,function(m,a,b){return a+JSON.stringify(photos)+b});
+    var html=SRC.replace(/(<script type="application\/json" id="seed">)[\s\S]*?(<\/script>)/,function(m,a,b){return a+JSON.stringify({photos:photos,opts:{shape:$('#shape').value,speed:$('#speed').value,kb:kbOn,theme:$('#theme').value}})+b});
     var a=document.createElement('a');
     a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
     a.download='marco-digital-con-fotos.html';
@@ -241,6 +256,8 @@ body.idle{cursor:none}
   ['mousemove','touchstart','keydown','click'].forEach(function(t){document.addEventListener(t,wake,{passive:true})});
   wake(); setVars();
   var seed=[]; try{seed=JSON.parse($('#seed').textContent||'[]')}catch(e){}
+  var opts={}; if(!Array.isArray(seed)){opts=seed.opts||{}; seed=seed.photos||[]}
+  applyOpts(opts);
   if(seed.length){photos=seed.slice(); show(0)}
   else idb('readonly',function(s){return s.get('photos')}).then(function(v){if(v&&v.length&&!photos.length){photos=v; show(0)}}).catch(function(){});
 })();
